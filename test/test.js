@@ -26,14 +26,14 @@ var fixture = {
 
 describe('glob', function() {
   it('should match properties using wildcards:', function() {
-    assert.deepEqual(glob('a.*', fixture), fixture);
+    assert.deepEqual(glob(fixture, 'a.*'), fixture);
   });
 
   it('should match properties using negation patterns:', function() {
-    assert.deepEqual(glob('!a', fixture), {});
-    assert.deepEqual(glob(['!a', 'a.b.c'], {a: {b: 'c', d: 'e'}}), {});
-    assert.deepEqual(glob(['!a.*'], {a: {b: 'c', d: 'e'}}), {a: {}});
-    assert.deepEqual(glob(['!a.b.[g-l]'], fixture), {
+    assert.deepEqual(glob(fixture, '!a'), {});
+    assert.deepEqual(glob({a: {b: 'c', d: 'e'}}, ['!a', 'a.b.c']), {});
+    assert.deepEqual(glob({a: {b: 'c', d: 'e'}}, ['*', '!a.*']), {a: {}});
+    assert.deepEqual(glob(fixture, ['*', '!a.b.[g-l]']), {
       a: {
         b: {
           c: 'd',
@@ -42,29 +42,26 @@ describe('glob', function() {
         i: 'j'
       }
     });
-    assert.deepEqual(glob('!a.b.c', fixture), {
-      a: {
-        b: {
-          e: 'f',
-          g: 'h',
-          i: {j: 'k'},
-          l: {g: 'k'}
-        },
-        i: 'j'
-      }
-    });
+  });
+
+  it('should match properties using multiple negation patterns:', function() {
+    var obj = {a: 'a', b: 'b', c: 'c', d: 'd'};
+
+    assert.deepEqual(glob(obj, ['*', '!a', '!b', '!c']), {d: 'd'});
+    assert.deepEqual(glob(obj, ['*', '!a', '!c', '!d']), {b: 'b'});
+    assert.deepEqual(glob(obj, ['*', '!a', '!b', '!c', '!d']), {});
   });
 
   it('should match properties using braces:', function() {
-    assert.deepEqual(glob('*.{b,i}', fixture), fixture);
-    assert.deepEqual(glob('a.*.{c,e}', fixture), {a: {b: {c: 'd', e: 'f'}}});
+    assert.deepEqual(glob(fixture, '*.{b,i}'), fixture);
+    assert.deepEqual(glob(fixture, 'a.*.{c,e}'), {a: {b: {c: 'd', e: 'f'}}});
   });
 
   it('should match a nested property using a wildcard:', function() {
-    assert.deepEqual(glob('a.*.g', fixture), {a: {b: {g: 'h'}}});
+    assert.deepEqual(glob(fixture, 'a.*.g'), {a: {b: {g: 'h'}}});
   });
 
   it('should match deep properties using globstars', function() {
-    assert.deepEqual(glob('a.**.g', fixture), {a: {b: {g: 'h', l: {g: 'k'}}}});
+    assert.deepEqual(glob(fixture, 'a.**.g'), {a: {b: {g: 'h', l: {g: 'k'}}}});
   });
 });
